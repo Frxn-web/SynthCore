@@ -1,0 +1,1424 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SynthCore Pro - Motor de Síntesis Musical Avanzado</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+            position: relative;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200px;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #00ffff, transparent);
+        }
+
+        .header h1 {
+            font-size: 3em;
+            margin-bottom: 15px;
+            background: linear-gradient(45deg, #00ffff, #ff6b6b, #4ecdc4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 800;
+        }
+
+        .header p {
+            font-size: 1.3em;
+            opacity: 0.8;
+            font-weight: 300;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 30px;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 30px 60px rgba(0, 255, 255, 0.1);
+        }
+
+        .card h2 {
+            color: #00ffff;
+            margin-bottom: 25px;
+            font-size: 1.4em;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #b0b0b0;
+            font-size: 0.9em;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            font-size: 14px;
+            background: rgba(255, 255, 255, 0.05);
+            color: #e0e0e0;
+            transition: all 0.3s ease;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #00ffff;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 120px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .slider-container {
+            position: relative;
+        }
+
+        .slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: rgba(255, 255, 255, 0.2);
+            outline: none;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #00ffff, #ff6b6b);
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #00ffff 0%, #ff6b6b 100%);
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 255, 255, 0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .generated-content {
+            grid-column: span 3;
+        }
+
+        .studio-interface {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 25px;
+        }
+
+        .mixer-board {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .channel-strip {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 15px 10px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .channel-strip h4 {
+            font-size: 0.8em;
+            margin-bottom: 10px;
+            color: #00ffff;
+        }
+
+        .level-meter {
+            width: 100%;
+            height: 100px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 5px;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .level-bar {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            background: linear-gradient(to top, #00ff00, #ffff00, #ff0000);
+            transition: height 0.1s ease;
+        }
+
+        .spectral-analyzer {
+            width: 100%;
+            height: 150px;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 10px;
+            position: relative;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+
+        .spectrum-bars {
+            display: flex;
+            align-items: end;
+            height: 100%;
+            padding: 10px;
+            gap: 2px;
+        }
+
+        .spectrum-bar {
+            background: linear-gradient(to top, #00ffff, #ff6b6b);
+            flex: 1;
+            min-height: 2px;
+            border-radius: 1px;
+            transition: height 0.1s ease;
+        }
+
+        .waveform-display {
+            width: 100%;
+            height: 120px;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 10px;
+            margin: 20px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .transport-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            margin: 25px 0;
+        }
+
+        .transport-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: none;
+            background: linear-gradient(135deg, #00ffff, #4ecdc4);
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0, 255, 255, 0.3);
+        }
+
+        .transport-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 10px 25px rgba(0, 255, 255, 0.5);
+        }
+
+        .time-display {
+            font-family: 'Courier New', monospace;
+            font-size: 1.5em;
+            color: #00ffff;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px 20px;
+            border-radius: 10px;
+            border: 1px solid rgba(0, 255, 255, 0.3);
+        }
+
+        .technical-specs {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 25px 0;
+        }
+
+        .spec-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(0, 255, 255, 0.2);
+            border-radius: 10px;
+            padding: 20px;
+        }
+
+        .spec-card h4 {
+            color: #ff6b6b;
+            margin-bottom: 10px;
+            font-size: 0.9em;
+        }
+
+        .spec-value {
+            font-size: 1.2em;
+            color: #00ffff;
+            font-weight: 600;
+        }
+
+        .download-matrix {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 25px;
+        }
+
+        .download-btn {
+            background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%);
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .download-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(78, 205, 196, 0.4);
+        }
+
+        .neural-network-viz {
+            width: 100%;
+            height: 200px;
+            background: radial-gradient(circle at center, rgba(0, 255, 255, 0.1), transparent);
+            border-radius: 15px;
+            position: relative;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .quantum-spinner {
+            width: 80px;
+            height: 80px;
+            border: 3px solid rgba(0, 255, 255, 0.2);
+            border-top: 3px solid #00ffff;
+            border-radius: 50%;
+            animation: quantumSpin 1s linear infinite;
+            margin: 0 auto 20px;
+            position: relative;
+        }
+
+        .quantum-spinner::before {
+            content: '';
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            right: 5px;
+            bottom: 5px;
+            border: 2px solid rgba(255, 107, 107, 0.2);
+            border-bottom: 2px solid #ff6b6b;
+            border-radius: 50%;
+            animation: quantumSpin 0.8s linear infinite reverse;
+        }
+
+        @keyframes quantumSpin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .success-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #4ecdc4, #44a08d);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            transform: translateX(400px);
+            transition: transform 0.5s ease;
+            z-index: 1000;
+        }
+
+        .success-notification.show {
+            transform: translateX(0);
+        }
+
+        @media (max-width: 1024px) {
+            .main-content {
+                grid-template-columns: 1fr 1fr;
+            }
+            
+            .generated-content {
+                grid-column: span 2;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .generated-content {
+                grid-column: span 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎛️ SynthCore Pro</h1>
+            <p>Motor de Síntesis Musical Avanzado con IA Neural</p>
+        </div>
+
+        <div class="main-content">
+            <div class="card">
+                <h2>🎼 Arquitectura Musical</h2>
+                <div class="form-group">
+                    <label for="genre">Matriz de Géneros:</label>
+                    <select id="genre" name="genre" required>
+                        <option value="">Selecciona arquitectura</option>
+                        <option value="synthwave">Synthwave (80s Revival)</option>
+                        <option value="trap">Trap (Modern Hip-Hop)</option>
+                        <option value="house">Progressive House</option>
+                        <option value="dnb">Drum & Bass</option>
+                        <option value="ambient">Ambient Cinematic</option>
+                        <option value="rock">Alternative Rock</option>
+                        <option value="jazz">Modern Jazz Fusion</option>
+                        <option value="classical">Neo-Classical</option>
+                        <option value="experimental">Experimental/IDM</option>
+                        <option value="world">World Fusion</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="complexity">Complejidad Armónica:</label>
+                    <div class="slider-container">
+                        <input type="range" id="complexity" class="slider" min="1" max="10" value="5">
+                        <span id="complexityValue">Intermedio (5)</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="tempo">BPM (Tempo Engine):</label>
+                    <div class="slider-container">
+                        <input type="range" id="tempo" class="slider" min="60" max="200" value="120">
+                        <span id="tempoValue">120 BPM</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="key">Tonalidad Base:</label>
+                    <select id="key" name="key">
+                        <option value="C">C Mayor</option>
+                        <option value="Cm">C Menor</option>
+                        <option value="G">G Mayor</option>
+                        <option value="Gm">G Menor</option>
+                        <option value="F">F Mayor</option>
+                        <option value="Fm">F Menor</option>
+                        <option value="A">A Mayor</option>
+                        <option value="Am">A Menor</option>
+                        <option value="E">E Mayor</option>
+                        <option value="Em">E Menor</option>
+                        <option value="D">D Mayor</option>
+                        <option value="Dm">D Menor</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>🎤 Sistema de Síntesis Vocal</h2>
+                <div class="form-group">
+                    <label for="lyrics">Entrada Lírica (MIDI-Text):</label>
+                    <textarea id="lyrics" placeholder="// Estructura lírica avanzada
+[Verso 1]
+En la noche digital brillan las luces de neón
+Algoritmos de pasión en mi corazón
+
+[Pre-Coro]
+Y el ritmo se acelera, la IA despierta
+
+[Coro]
+Somos datos en la brisa
+Código que se desliza
+En este mundo sintético
+Todo es más auténtico
+
+[Verso 2]
+Frecuencias moduladas susurran secretos
+Ondas cuadradas dibujan nuestros afectos"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="vocalStyle">Arquitectura Vocal:</label>
+                    <select id="vocalStyle">
+                        <option value="lead">Lead Vocal (Principal)</option>
+                        <option value="harmony">Harmony Stack (Coros)</option>
+                        <option value="vocoder">Vocoder Sintético</option>
+                        <option value="talk">Talk Box</option>
+                        <option value="ambient">Ambient Vocal Pad</option>
+                        <option value="instrumental">Solo Instrumental</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="vocalProcessing">Procesamiento DSP:</label>
+                    <select id="vocalProcessing">
+                        <option value="clean">Clean (Sin efectos)</option>
+                        <option value="reverb">Hall Reverb</option>
+                        <option value="delay">Analog Delay</option>
+                        <option value="chorus">Stereo Chorus</option>
+                        <option value="distortion">Tube Distortion</option>
+                        <option value="autotune">Auto-Tune</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>⚙️ Motor de Síntesis</h2>
+                <div class="form-group">
+                    <label for="synthEngine">Engine de Síntesis:</label>
+                    <select id="synthEngine">
+                        <option value="wavetable">Wavetable (Serum-style)</option>
+                        <option value="fm">FM Synthesis (DX7-style)</option>
+                        <option value="subtractive">Subtractive (Moog-style)</option>
+                        <option value="granular">Granular Synthesis</option>
+                        <option value="physical">Physical Modeling</option>
+                        <option value="hybrid">Hybrid Neural-Analog</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="duration">Duración (Compases):</label>
+                    <div class="slider-container">
+                        <input type="range" id="duration" class="slider" min="8" max="128" value="32">
+                        <span id="durationValue">32 compases (~1:30)</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="arrangement">Arreglo Automático:</label>
+                    <select id="arrangement">
+                        <option value="minimal">Minimal (4 tracks)</option>
+                        <option value="standard">Standard (8 tracks)</option>
+                        <option value="orchestral">Orchestral (16 tracks)</option>
+                        <option value="experimental">Experimental (32 tracks)</option>
+                    </select>
+                </div>
+
+                <button type="button" class="btn" id="generateBtn">
+                    🚀 Iniciar Síntesis Neural
+                </button>
+            </div>
+
+            <div class="card generated-content" id="generatedContent" style="display: none;">
+                <h2>🎛️ Estudio de Masterización Virtual</h2>
+                
+                <div class="loading" id="loading">
+                    <div class="quantum-spinner"></div>
+                    <h3>Procesando con Red Neural Avanzada</h3>
+                    <p id="loadingStatus">Inicializando arquitectura de síntesis...</p>
+                    <div class="neural-network-viz" id="neuralViz"></div>
+                </div>
+
+                <div class="studio-interface" id="studioInterface" style="display: none;">
+                    <div class="transport-controls">
+                        <button class="transport-btn" id="playBtn" title="Reproducir">▶️</button>
+                        <button class="transport-btn" id="stopBtn" title="Detener">⏹️</button>
+                        <button class="transport-btn" id="loopBtn" title="Loop">🔄</button>
+                        <div class="time-display">
+                            <span id="currentTime">00:00.000</span> / <span id="totalTime">00:00.000</span>
+                        </div>
+                    </div>
+
+                    <div class="spectral-analyzer">
+                        <div class="spectrum-bars" id="spectrumBars"></div>
+                    </div>
+
+                    <div class="waveform-display" id="waveformDisplay">
+                        <canvas id="waveformCanvas"></canvas>
+                    </div>
+
+                    <div class="mixer-board">
+                        <div class="channel-strip">
+                            <h4>KICK</h4>
+                            <div class="level-meter"><div class="level-bar" id="kickLevel"></div></div>
+                        </div>
+                        <div class="channel-strip">
+                            <h4>SNARE</h4>
+                            <div class="level-meter"><div class="level-bar" id="snareLevel"></div></div>
+                        </div>
+                        <div class="channel-strip">
+                            <h4>BASS</h4>
+                            <div class="level-meter"><div class="level-bar" id="bassLevel"></div></div>
+                        </div>
+                        <div class="channel-strip">
+                            <h4>LEAD</h4>
+                            <div class="level-meter"><div class="level-bar" id="leadLevel"></div></div>
+                        </div>
+                        <div class="channel-strip">
+                            <h4>PAD</h4>
+                            <div class="level-meter"><div class="level-bar" id="padLevel"></div></div>
+                        </div>
+                        <div class="channel-strip">
+                            <h4>FX</h4>
+                            <div class="level-meter"><div class="level-bar" id="fxLevel"></div></div>
+                        </div>
+                    </div>
+
+                    <div class="technical-specs">
+                        <div class="spec-card">
+                            <h4>Información del Track</h4>
+                            <div class="spec-value" id="trackTitle">Untitled</div>
+                            <small id="trackArtist">SynthCore Pro</small>
+                        </div>
+                        <div class="spec-card">
+                            <h4>Especificaciones Técnicas</h4>
+                            <div class="spec-value">96kHz/32-bit</div>
+                            <small>Calidad profesional</small>
+                        </div>
+                        <div class="spec-card">
+                            <h4>Análisis Neural</h4>
+                            <div class="spec-value" id="aiAnalysis">100%</div>
+                            <small>Originalidad confirmada</small>
+                        </div>
+                        <div class="spec-card">
+                            <h4>Certificación</h4>
+                            <div class="spec-value">✓ READY</div>
+                            <small>Listo para distribución</small>
+                        </div>
+                    </div>
+
+                    <div class="download-matrix">
+                        <button class="download-btn" id="downloadWav96">WAV 96kHz</button>
+                        <button class="download-btn" id="downloadWav44">WAV 44.1kHz</button>
+                        <button class="download-btn" id="downloadMp3320">MP3 320kbps</button>
+                        <button class="download-btn" id="downloadFlac">FLAC Lossless</button>
+                        <button class="download-btn" id="downloadStems">Stems Package</button>
+                        <button class="download-btn" id="downloadMidi">MIDI Export</button>
+                        <button class="download-btn" id="downloadProject">Project File</button>
+                        <button class="download-btn" id="downloadCertificate">Certificado Pro</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="success-notification" id="successNotification">
+        ✅ Descarga completada exitosamente
+    </div>
+
+    <script>
+        // Motor de Síntesis Musical Avanzado
+        class SynthCoreEngine {
+            constructor() {
+                this.audioContext = null;
+                this.masterGain = null;
+                this.analyser = null;
+                this.currentTrack = null;
+                this.isPlaying = false;
+                this.tracks = new Map();
+                this.effects = new Map();
+                this.sequencer = null;
+                this.initializeEngine();
+            }
+
+            async initializeEngine() {
+                try {
+                    this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    
+                    // Manejar estado suspended
+                    if (this.audioContext.state === 'suspended') {
+                        await this.audioContext.resume();
+                    }
+                    
+                    this.masterGain = this.audioContext.createGain();
+                    this.analyser = this.audioContext.createAnalyser();
+                    
+                    this.analyser.fftSize = 2048;
+                    this.masterGain.connect(this.analyser);
+                    this.analyser.connect(this.audioContext.destination);
+                    
+                    this.setupEffectChain();
+                    console.log('SynthCore Engine initialized successfully');
+                    return true;
+                } catch (error) {
+                    console.error('Error initializing audio context:', error);
+                    return false;
+                }
+            }
+
+            setupEffectChain() {
+                // Reverb
+                this.effects.set('reverb', this.createReverb());
+                // Delay
+                this.effects.set('delay', this.createDelay());
+                // Chorus
+                this.effects.set('chorus', this.createChorus());
+                // Compressor
+                this.effects.set('compressor', this.createCompressor());
+            }
+
+            createReverb() {
+                const convolver = this.audioContext.createConvolver();
+                const impulse = this.generateImpulseResponse(2, 2, false);
+                convolver.buffer = impulse;
+                return convolver;
+            }
+
+            createDelay() {
+                const delay = this.audioContext.createDelay(1.0);
+                const feedback = this.audioContext.createGain();
+                const wet = this.audioContext.createGain();
+                
+                delay.delayTime.value = 0.3;
+                feedback.gain.value = 0.3;
+                wet.gain.value = 0.2;
+                
+                delay.connect(feedback);
+                feedback.connect(delay);
+                delay.connect(wet);
+                
+                return { input: delay, output: wet, delay, feedback, wet };
+            }
+
+            createChorus() {
+                const delay = this.audioContext.createDelay(0.05);
+                const lfo = this.audioContext.createOscillator();
+                const depth = this.audioContext.createGain();
+                
+                lfo.frequency.value = 1.5;
+                depth.gain.value = 0.01;
+                delay.delayTime.value = 0.02;
+                
+                lfo.connect(depth);
+                depth.connect(delay.delayTime);
+                lfo.start();
+                
+                return { input: delay, output: delay, lfo, depth };
+            }
+
+            createCompressor() {
+                const compressor = this.audioContext.createDynamicsCompressor();
+                compressor.threshold.value = -20;
+                compressor.knee.value = 10;
+                compressor.ratio.value = 8;
+                compressor.attack.value = 0.003;
+                compressor.release.value = 0.1;
+                return compressor;
+            }
+
+            generateImpulseResponse(duration, decay, reverse) {
+                const sampleRate = this.audioContext.sampleRate;
+                const length = sampleRate * duration;
+                const impulse = this.audioContext.createBuffer(2, length, sampleRate);
+                
+                for (let channel = 0; channel < 2; channel++) {
+                    const channelData = impulse.getChannelData(channel);
+                    for (let i = 0; i < length; i++) {
+                        const n = reverse ? length - i : i;
+                        channelData[i] = (Math.random() * 2 - 1) * Math.pow(1 - n / length, decay);
+                    }
+                }
+                return impulse;
+            }
+
+            async generateComposition(params) {
+                console.log('Generating composition with params:', params);
+                
+                const composition = {
+                    genre: params.genre,
+                    bpm: params.tempo,
+                    key: params.key,
+                    complexity: params.complexity,
+                    duration: params.duration,
+                    tracks: []
+                };
+
+                // Generar arquitectura musical
+                const architecture = this.getMusicalArchitecture(params.genre);
+                const chordProgression = this.generateChordProgression(params.key, params.complexity);
+                const rhythm = this.generateRhythmPattern(params.genre, params.tempo);
+
+                // Crear tracks individuales
+                composition.tracks.push(await this.generateDrumTrack(rhythm, params));
+                composition.tracks.push(await this.generateBassTrack(chordProgression, params));
+                composition.tracks.push(await this.generateLeadTrack(chordProgression, params));
+                composition.tracks.push(await this.generatePadTrack(chordProgression, params));
+                composition.tracks.push(await this.generateArpTrack(chordProgression, params));
+                
+                if (params.vocalStyle !== 'instrumental') {
+                    composition.tracks.push(await this.generateVocalTrack(params.lyrics, params));
+                }
+
+                // Aplicar efectos y masterización
+                const masterTrack = await this.masterComposition(composition);
+                
+                return masterTrack;
+            }
+
+            getMusicalArchitecture(genre) {
+                const architectures = {
+                    'synthwave': {
+                        scales: ['minor', 'dorian', 'phrygian'],
+                        chordTypes: ['sus2', 'sus4', 'add9', 'maj7'],
+                        rhythmComplexity: 0.6,
+                        synthTypes: ['saw', 'square', 'triangle'],
+                        effects: ['chorus', 'delay', 'reverb']
+                    },
+                    'trap': {
+                        scales: ['minor', 'harmonic_minor'],
+                        chordTypes: ['min', 'dim', 'aug'],
+                        rhythmComplexity: 0.9,
+                        synthTypes: ['sine', 'saw'],
+                        effects: ['distortion', 'delay']
+                    },
+                    'house': {
+                        scales: ['major', 'mixolydian'],
+                        chordTypes: ['maj7', 'min7', 'dom7'],
+                        rhythmComplexity: 0.7,
+                        synthTypes: ['saw', 'square'],
+                        effects: ['reverb', 'delay', 'chorus']
+                    },
+                    'dnb': {
+                        scales: ['minor', 'dorian'],
+                        chordTypes: ['min', 'maj', 'sus4'],
+                        rhythmComplexity: 0.95,
+                        synthTypes: ['saw', 'noise'],
+                        effects: ['distortion', 'reverb']
+                    },
+                    'ambient': {
+                        scales: ['major', 'dorian', 'mixolydian'],
+                        chordTypes: ['maj7', 'min7', 'sus2', 'sus4'],
+                        rhythmComplexity: 0.3,
+                        synthTypes: ['sine', 'triangle', 'pad'],
+                        effects: ['reverb', 'delay', 'chorus']
+                    }
+                };
+                
+                return architectures[genre] || architectures['house'];
+            }
+
+            generateChordProgression(key, complexity) {
+                const keyMap = {
+                    'C': [261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88],
+                    'Cm': [261.63, 293.66, 311.13, 349.23, 392.00, 415.30, 466.16],
+                    'G': [392.00, 440.00, 493.88, 523.25, 587.33, 659.25, 739.99],
+                    'Gm': [392.00, 440.00, 466.16, 523.25, 587.33, 622.25, 698.46],
+                    'F': [349.23, 392.00, 440.00, 466.16, 523.25, 587.33, 659.25],
+                    'Fm': [349.23, 392.00, 415.30, 466.16, 523.25, 554.37, 622.25],
+                    'A': [440.00, 493.88, 554.37, 587.33, 659.25, 739.99, 830.61],
+                    'Am': [440.00, 493.88, 523.25, 587.33, 659.25, 698.46, 783.99],
+                    'E': [329.63, 369.99, 415.30, 440.00, 493.88, 554.37, 622.25],
+                    'Em': [329.63, 369.99, 392.00, 440.00, 493.88, 523.25, 587.33],
+                    'D': [293.66, 329.63, 369.99, 392.00, 440.00, 493.88, 554.37],
+                    'Dm': [293.66, 329.63, 349.23, 392.00, 440.00, 466.16, 523.25]
+                };
+
+                const scale = keyMap[key];
+                const progressions = [
+                    [0, 3, 5, 4], // vi-IV-V-IV
+                    [0, 5, 3, 4], // vi-V-IV-V
+                    [0, 2, 4, 5], // vi-ii-V-vi
+                    [0, 4, 1, 5], // vi-V-ii-V
+                    [0, 3, 4, 5], // vi-IV-V-V
+                    [0, 2, 3, 4], // vi-ii-IV-V
+                ];
+
+                const baseProgression = progressions[Math.floor(Math.random() * progressions.length)];
+                
+                // Aplicar complejidad
+                if (complexity > 7) {
+                    // Añadir extensiones y alteraciones
+                    return baseProgression.map(degree => ({
+                        root: scale[degree],
+                        third: scale[(degree + 2) % 7],
+                        fifth: scale[(degree + 4) % 7],
+                        seventh: scale[(degree + 6) % 7],
+                        ninth: scale[(degree + 1) % 7] * 2
+                    }));
+                } else {
+                    // Triadas básicas
+                    return baseProgression.map(degree => ({
+                        root: scale[degree],
+                        third: scale[(degree + 2) % 7],
+                        fifth: scale[(degree + 4) % 7]
+                    }));
+                }
+            }
+
+            generateRhythmPattern(genre, bpm) {
+                const patterns = {
+                    'synthwave': [1, 0, 0.5, 0, 0.8, 0, 0.3, 0, 1, 0, 0.5, 0, 0.6, 0, 0.4, 0],
+                    'trap': [1, 0, 0, 0.3, 0, 0, 1, 0, 0.2, 0, 0, 0.4, 0, 0, 0.8, 0],
+                    'house': [1, 0, 0.6, 0, 1, 0, 0.6, 0, 1, 0, 0.6, 0, 1, 0, 0.6, 0],
+                    'dnb': [1, 0, 0, 0, 0.8, 0, 0, 0.3, 0, 0, 1, 0, 0, 0.5, 0, 0],
+                    'ambient': [1, 0, 0, 0, 0.3, 0, 0, 0, 0.5, 0, 0, 0, 0.2, 0, 0, 0]
+                };
+
+                return {
+                    kick: patterns[genre] || patterns['house'],
+                    snare: patterns[genre]?.map((v, i) => i % 4 === 2 ? v : 0) || [0, 0, 1, 0],
+                    hihat: patterns[genre]?.map(v => v * 0.3) || [0.3, 0.2, 0.3, 0.2],
+                    bpm: bpm
+                };
+            }
+
+            async generateDrumTrack(rhythm, params) {
+                const sampleRate = this.audioContext.sampleRate;
+                const beatsPerSecond = params.tempo / 60;
+                const samplesPerBeat = sampleRate / beatsPerSecond;
+                const totalSamples = Math.floor(samplesPerBeat * 4 * params.duration); // 4 beats per bar
+                
+                const buffer = this.audioContext.createBuffer(2, totalSamples, sampleRate);
+                
+                for (let channel = 0; channel < 2; channel++) {
+                    const channelData = buffer.getChannelData(channel);
+                    
+                    for (let i = 0; i < totalSamples; i++) {
+                        const time = i / sampleRate;
+                        const beatPosition = (i / samplesPerBeat) % rhythm.kick.length;
+                        const beatIndex = Math.floor(beatPosition);
+                        
+                        let sample = 0;
+                        
+                        // Kick drum
+                        if (rhythm.kick[beatIndex] > 0) {
+                            const kickTime = beatPosition % 1;
+                            if (kickTime < 0.1) {
+                                const kickFreq = 60 * (1 - kickTime * 5);
+                                sample += Math.sin(2 * Math.PI * kickFreq * time) * 
+                                         Math.exp(-kickTime * 20) * rhythm.kick[beatIndex] * 0.8;
+                            }
+                        }
+                        
+                        // Snare
+                        if (rhythm.snare[beatIndex] > 0) {
+                            const snareTime = beatPosition % 1;
+                            if (snareTime < 0.05) {
+                                const noise = (Math.random() * 2 - 1) * Math.exp(-snareTime * 30);
+                                const tone = Math.sin(2 * Math.PI * 200 * time) * Math.exp(-snareTime * 25);
+                                sample += (noise + tone) * rhythm.snare[beatIndex] * 0.6;
+                            }
+                        }
+                        
+                        // Hi-hat
+                        if (rhythm.hihat[beatIndex] > 0) {
+                            const hihatTime = beatPosition % 1;
+                            if (hihatTime < 0.02) {
+                                const noise = (Math.random() * 2 - 1) * Math.exp(-hihatTime * 80);
+                                sample += noise * rhythm.hihat[beatIndex] * 0.3;
+                            }
+                        }
+                        
+                        channelData[i] = Math.tanh(sample);
+                    }
+                }
+                
+                return { name: 'Drums', buffer, gain: 0.8 };
+            }
+
+            async generateBassTrack(chordProgression, params) {
+                const sampleRate = this.audioContext.sampleRate;
+                const beatsPerSecond = params.tempo / 60;
+                const samplesPerBeat = sampleRate / beatsPerSecond;
+                const samplesPerChord = samplesPerBeat * 4; // 4 beats per chord
+                const totalSamples = Math.floor(samplesPerChord * chordProgression.length * (params.duration / 4));
+                
+                const buffer = this.audioContext.createBuffer(2, totalSamples, sampleRate);
+                
+                for (let channel = 0; channel < 2; channel++) {
+                    const channelData = buffer.getChannelData(channel);
+                    
+                    for (let i = 0; i < totalSamples; i++) {
+                        const time = i / sampleRate;
+                        const chordIndex = Math.floor(i / samplesPerChord) % chordProgression.length;
+                        const chord = chordProgression[chordIndex];
+                        const chordTime = (i % samplesPerChord) / samplesPerChord;
+                        
+                        // Bass fundamental (root)
+                        const bassFreq = chord.root / 2; // Una octava más grave
+                        let bassSignal = Math.sin(2 * Math.PI * bassFreq * time);
+                        
+                        // Añadir armónicos para riqueza tonal
+                        bassSignal += Math.sin(2 * Math.PI * bassFreq * 2 * time) * 0.3;
+                        bassSignal += Math.sin(2 * Math.PI * bassFreq * 3 * time) * 0.1;
+                        
+                        // Sub-bass
+                        bassSignal += Math.sin(2 * Math.PI * bassFreq / 2 * time) * 0.4;
+                        
+                        // Envelope y groove
+                        const envelope = Math.exp(-chordTime * 1.5) * (1 - Math.exp(-chordTime * 15));
+                        const groove = 1 + 0.1 * Math.sin(2 * Math.PI * 2 * time); // Ligero swing
+                        
+                        channelData[i] = bassSignal * envelope * groove * 0.6;
+                    }
+                }
+                
+                return { name: 'Bass', buffer, gain: 0.7 };
+            }
+
+            async generateLeadTrack(chordProgression, params) {
+                const sampleRate = this.audioContext.sampleRate;
+                const beatsPerSecond = params.tempo / 60;
+                const samplesPerBeat = sampleRate / beatsPerSecond;
+                const samplesPerChord = samplesPerBeat * 4;
+                const totalSamples = Math.floor(samplesPerChord * chordProgression.length * (params.duration / 4));
+                
+                const buffer = this.audioContext.createBuffer(2, totalSamples, sampleRate);
+                
+                for (let channel = 0; channel < 2; channel++) {
+                    const channelData = buffer.getChannelData(channel);
+                    
+                    for (let i = 0; i < totalSamples; i++) {
+                        const time = i / sampleRate;
+                        const chordIndex = Math.floor(i / samplesPerChord) % chordProgression.length;
+                        const chord = chordProgression[chordIndex];
+                        const noteTime = (i % (samplesPerBeat / 2)) / (samplesPerBeat / 2); // 8th notes
+                        
+                        // Seleccionar nota de la melodía
+                        const melodyNotes = [chord.root * 2, chord.third * 2, chord.fifth * 2];
+                        const noteIndex = Math.floor((i / (samplesPerBeat / 2)) % melodyNotes.length);
+                        const freq = melodyNotes[noteIndex];
+                        
+                        // Síntesis wavetable simulada
+                        let signal = 0;
+                        if (params.synthEngine === 'wavetable') {
+                            // Wavetable con interpolación
+                            signal = Math.sin(2 * Math.PI * freq * time);
+                            signal += Math.sin(2 * Math.PI * freq * time + Math.PI/3) * 0.5;
+                            signal *= 1 + 0.3 * Math.sin(2 * Math.PI * 0.5 * time); // Modulación
+                        } else if (params.synthEngine === 'fm') {
+                            // FM synthesis
+                            const modFreq = freq * 2.1;
+                            const modIndex = 2 + Math.sin(2 * Math.PI * 0.2 * time);
+                            signal = Math.sin(2 * Math.PI * freq * time + modIndex * Math.sin(2 * Math.PI * modFreq * time));
+                        } else {
+                            // Subtractive (saw wave con filtro)
+                            signal = (2 * (time * freq % 1) - 1); // Saw wave
+                            // Simular filtro paso bajo
+                            signal = signal * (1 - 0.5 * Math.sin(2 * Math.PI * 2 * time));
+                        }
+                        
+                        // Envelope
+                        const envelope = Math.exp(-noteTime * 2) * (1 - Math.exp(-noteTime * 20));
+                        
+                        // Vibrato
+                        const vibrato = 1 + 0.02 * Math.sin(2 * Math.PI * 5 * time);
+                        
+                        // Pan (stereo)
+                        const pan = channel === 0 ? 0.7 : 1.3;
+                        
+                        channelData[i] = signal * envelope * vibrato * pan * 0.4;
+                    }
+                }
+                
+                return { name: 'Lead', buffer, gain: 0.6 };
+            }
+
+            async generatePadTrack(chordProgression, params) {
+                const sampleRate = this.audioContext.sampleRate;
+                const beatsPerSecond = params.tempo / 60;
+                const samplesPerBeat = sampleRate / beatsPerSecond;
+                const samplesPerChord = samplesPerBeat * 8; // Cambio cada 2 compases
+                const totalSamples = Math.floor(samplesPerChord * chordProgression.length * (params.duration / 8));
+                
+                const buffer = this.audioContext.createBuffer(2, totalSamples, sampleRate);
+                
+                for (let channel = 0; channel < 2; channel++) {
+                    const channelData = buffer.getChannelData(channel);
+                    
+                    for (let i = 0; i < totalSamples; i++) {
+                        const time = i / sampleRate;
+                        const chordIndex = Math.floor(i / samplesPerChord) % chordProgression.length;
+                        const chord = chordProgression[chordIndex];
+                        const chordTime = (i % samplesPerChord) / samplesPerChord;
+                        
+                        // Pad suave con múltiples voces
+                        let padSignal = 0;
+                        
+                        // Root
+                        padSignal += Math.sin(2 * Math.PI * chord.root * time) * 0.3;
+                        // Third
+                        padSignal += Math.sin(2 * Math.PI * chord.third * time) * 0.25;
+                        // Fifth
+                        padSignal += Math.sin(2 * Math.PI * chord.fifth * time) * 0.25;
+                        
+                        if (chord.seventh) {
+                            padSignal += Math.sin(2 * Math.PI * chord.seventh * time) * 0.2;
+                        }
+                        
+                        // Modulación lenta para movimiento
+                        const lfo = 1 + 0.1 * Math.sin(2 * Math.PI * 0.1 * time);
+                        padSignal *= lfo;
+                        
+                        // Envelope suave
+                        const envelope = 1 - Math.exp(-chordTime * 0.5);
+                        
+                        // Filtro simulado
+                        const cutoff = 0.3 + 0.2 * Math.sin(2 * Math.PI * 0.05 * time);
+                        padSignal *= cutoff;
+                        
+                        channelData[i] = padSignal * envelope * 0.3;
+                    }
+                }
+                
+                return { name: 'Pad', buffer, gain: 0.4 };
+            }
+
+            async generateArpTrack(chordProgression, params) {
+                const sampleRate = this.audioContext.sampleRate;
+                const beatsPerSecond = params.tempo / 60;
+                const samplesPerBeat = sampleRate / beatsPerSecond;
+                const samplesPerNote = samplesPerBeat / 4; // 16th notes
+                const totalSamples = Math.floor(samplesPerNote * 16 * params.duration);
+                
+                const buffer = this.audioContext.createBuffer(2, totalSamples, sampleRate);
+                
+                for (let channel = 0; channel < 2; channel++) {
+                    const channelData = buffer.getChannelData(channel);
+                    
+                    for (let i = 0; i < totalSamples; i++) {
+                        const time = i / sampleRate;
+                        const noteIndex = Math.floor(i / samplesPerNote) % 16;
+                        const chordIndex = Math.floor(noteIndex / 4) % chordProgression.length;
+                        const chord = chordProgression[chordIndex];
+                        const noteTime = (i % samplesPerNote) / samplesPerNote;
+                        
+                        // Patrón de arpegio
+                        const arpPattern = [0, 1, 2, 1]; // root, third, fifth, third
+                        const patternIndex = noteIndex % 4;
+                        const chordTones = [chord.root * 2, chord.third * 2, chord.fifth * 2];
+                        const freq = chordTones[arpPattern[patternIndex]];
+                        
+                        // Síntesis
+                        let arpSignal = Math.sin(2 * Math.PI * freq * time);
+                        arpSignal += Math.sin(2 * Math.PI * freq * 2 * time) * 0.3;
+                        
+                        // Envelope rápido
+                        const envelope = Math.exp(-noteTime * 5) * (1 - Math.exp(-noteTime * 50));
+                        
+                        // Filtro con sweep
+                        const filterMod = 1 + 0.5 * Math.sin(2 * Math.PI * time);
+                        arpSignal *= filterMod;
+                        
+                        channelData[i] = arpSignal * envelope * 0.3;
+                    }
+                }
+                
+                return { name: 'Arp', buffer, gain: 0.5 };
+            }
+
+            async generateVocalTrack(lyrics, params) {
+                // Placeholder para síntesis vocal
+                // En implementación real, aquí iría el motor de síntesis vocal
+                const sampleRate = this.audioContext.sampleRate;
+                const totalSamples = sampleRate * (params.duration * 60 / params.tempo * 4);
+                const buffer = this.audioContext.createBuffer(2, totalSamples, sampleRate);
+                
+                // Por ahora, generar placeholder de vocal
+                for (let channel = 0; channel < 2; channel++) {
+                    const channelData = buffer.getChannelData(channel);
+                    for (let i = 0; i < totalSamples; i++) {
+                        const time = i / sampleRate;
+                        // Simulación básica de formantes vocales
+                        let vocal = Math.sin(2 * Math.PI * 440 * time) * 0.3; // F0
+                        vocal += Math.sin(2 * Math.PI * 1000 * time) * 0.2; // F1
+                        vocal += Math.sin(2 * Math.PI * 2500 * time) * 0.1; // F2
+                        
+                        const envelope = Math.sin(2 * Math.PI * 0.1 * time) * 0.5 + 0.5;
+                        channelData[i] = vocal * envelope * 0.2;
+                    }
+                }
+                
+                return { name: 'Vocals', buffer, gain: 0.6 };
+            }
+
+            async masterComposition(composition) {
+                console.log('Mastering composition...');
+                
+                // Mezclar todas las pistas
+                const maxLength = Math.max(...composition.tracks.map(t => t.buffer.length));
+                const masterBuffer = this.audioContext.createBuffer(2, maxLength, this.audioContext.sampleRate);
+                
+                for (let channel = 0; channel < 2; channel++) {
+                    const masterData = masterBuffer.getChannelData(channel);
+                    
+                    // Sumar todas las pistas
+                    composition.tracks.forEach(track => {
+                        const trackData = track.buffer.getChannelData(channel);
+                        for (let i = 0; i < Math.min(maxLength, trackData.length); i++) {
+                            masterData[i] += trackData[i] * track.gain;
+                        }
+                    });
+                    
+                    // Aplicar compresión y limitación
+                    for (let i = 0; i < maxLength; i++) {
+                        // Compresión suave
+                        masterData[i] = Math.tanh(masterData[i] * 0.8) * 0.9;
+                    }
+                }
+                
+                return {
+                    buffer: masterBuffer,
+                    metadata: {
+                        title: this.generateTitle(composition.genre),
+                        artist: this.generateArtist(),
+                        genre: composition.genre,
+                        bpm: composition.bpm,
+                        key: composition.key,
+                        duration: maxLength / this.audioContext.sampleRate,
+                        tracks: composition.tracks.map(t => t.name)
+                    }
+                };
+            }
+
+            generateTitle(genre) {
+                const titleWords = {
+                    'synthwave': ['Neon', 'Cyber', 'Retro', 'Digital', 'Chrome', 'Pulse', 'Drive', 'Dreams'],
+                    'trap': ['Shadow', 'Fire', 'Street', 'Crown', 'Beast', 'Storm', 'Game', 'Flow'],
+                    'house': ['Night', 'Dance', 'Energy', 'Beat', 'Move', 'Feel', 'Groove', 'Life'],
+                    'dnb': ['Rush', 'Speed', 'Jump', 'Break', 'Roll', 'Drop', 'Bass', 'Step'],
+                    'ambient': ['Float', 'Drift', 'Space', 'Time', 'Deep', 'Calm', 'Peace', 'Mind']
+                };
+                
+                const words = titleWords[genre] || titleWords['house'];
+                const word1 = words[Math.floor(Math.random() * words.length)];
+                const word2 = words[Math.floor(Math.random() * words.length)];
+                
+                return `${word1} ${word2}`;
+            }
+
+            generateArtist() {
+                const prefixes = ['Neural', 'Quantum', 'Synthetic', 'Digital', 'Cyber', 'AI'];
+                const suffixes = ['Core', 'Wave', 'Mind', 'Soul', 'Beat', 'Flow'];
+                
+                const prefix = prefixes[Math.floor(Math.random() * prefixes.length)];
+                const suffix = suffixes[Math.floor(Math.random() * suffixes.length)];
+                
+                return `${prefix}${suffix}`;
+            }
+        }
+
+        // Instancia global del motor
+        let synthEngine = null;
+        let currentComposition = null;
+        let isPlaying = false;
+        let playbackSource = null;
+        let startTime = 0;
+        let pauseTime = 0;
+
+        // Inicialización mejorada
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('Inicializando SynthCore Pro...');
+            
+            try {
+                synthEngine = new SynthCoreEngine();
+                await synthEngine.initializeEngine();
+                setupEventListeners();
+                initializeSliders();
+                setupVisualizers();
+                
+                console.log('SynthCore Pro listo');
+                
+                // Activar botón de generación
+                const generateBtn = document.getElementById('generateBtn');
+                generateBtn.disabled = false;
+                generateBtn.textContent = '🚀 Iniciar Síntesis Neural';
+                
+            } catch (error) {
+                console.error('Error inicializando:', error);
+                alert('Error al inicializar el motor de síntesis. Recarga la página.');
+            }
+        });
+
+        function setupEventListeners() {
+            // Activar AudioContext en primer clic (requisito del navegador)
+            document.addEventListener('click', async function initAudio() {
+                if (synthEngine && synthEngine.audioContext && synthEngine.audioContext.state === 'suspended') {
+                    try {
+                        await synthEngine.audioContext.resume();
+                        console.log('AudioContext activado');
+                    } catch (error) {
+                        console.error('Error activando AudioContext:', error);
+                    }
+                }
+                document.removeEventListener('click', initAudio);
+            }, { once: true });
+
+            document.getElementById('generateBtn').addEventListener('click', generateComposition);
+            document.getElementById('playBtn').addEventListener('click', togglePlayback);
+            document.getElementById('stopBtn').addEventListener('click', stopPlayback);
+            document.getElementById('loopBtn').addEventListener('click', toggleLoop);
+            
+            // Sliders
+            document.getElementById('tempo').addEventListener('input', updateTempoDisplay);
+            document.getElementById('complexity').addEventListener('input', updateComplexityDisplay);
+            document.getElementById('duration').addEventListener('input', updateDurationDisplay);
+            
+            // Downloads
+            document.getElementById('downloadWav96').addEventListener('click', () => downloadTrack('wav', 96000));
+            document.getElementById('downloadWav44').addEventListener('click', () => downloadTrack('wav', 44100));
+            document.getElementById('downloadMp3320').addEventListener('click', () => downloadTrack('mp3', 320));
+            document.getElementById('downloadFlac').addEventListener('click', () => downloadTrack('flac'));
+            document.getElementById('downloadStems').addEventListener('click', downloadStems);
+            document.getElementById('downloadMidi').addEventListener('click', downloadMidi);
+            document.getElementById('downloadProject').addEventListener('click', downloadProject);
+            document.getElementById('downloadCertificate').addEventListener('click', downloadCertificate);
+        }
+
+        function initializeSliders() {
+            updateTempoDisplay();
+            updateComplexityDisplay();
+            updateDurationDisplay();
+        }
+
+        function updateTempoDisplay() {
+            const tempo = document.getElementById('tempo').value;
+            document.getElementById('tempoValue').textContent = `${tempo} BPM`;
+        }
+
+        function updateComplexityDisplay() {
+            const complexity = document.getElementById('complexity').value;
+            const levels = ['Básico', 'Simple', 'Fácil', 'Intermedio', 'Moderado', 'Avanzado', 'Complejo', 'Experto', 'Maestro', 'Neural'];
+            document.getElementById('complexityValue').textContent = `${levels[complexity - 1]} (${complexity})`;
+        }
+
+        function updateDurationDisplay() {
+            const duration = document.getElementById('duration').value;
+            const minutes = Math.floor(duration * 60 / parseInt(document.getElementById('tempo').value) * 4 / 60);
+            const seconds = Math.floor((duration * 60 / parseInt(document.getElementById('tempo').value) * 4) % 60);
+            document.getElementById('durationValue').textContent = `${duration} compases (~${minutes}:${seconds.toString().padStart(2, '0')})`;
+        }
+
+        function setupVisualizers() {
+            // Crear barras del analizador de espectro
+            const spectrumBars = document.getElementById('spectrumBars');
+            for (let i = 0; i < 64; i++) {
+                const bar = document.createElement('div');
+                bar.className = 'spectrum-bar';
+                spectrumBars.appendChild(bar);
+            }
+            
+            // Configurar canvas del waveform
+            const canvas = document.getElementById('waveformCanvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+        }
+
+        async function generateComposition() {
+            const genre = document.getElementById('genre').value;
+            if (!genre) {
+                alert('Por favor, selecciona una arquitectura musical');
+                return;
+            }
+
+            // Asegurar que el motor esté inicializado
+            if (!synthEngine || !synthEngine.audioContext) {
+                synthEngine = new SynthCoreEngine();
+                await new Promise(resolve => setTimeout(resolve, 100)); // Dar tiempo para inicializar
+            }
+
+            // Mostrar loading
+            document.getElementById('generatedContent').style.display = 'block';
+            document.getElementById('loading').classList.add('active');
+            document.getElementById('studioInterface').style.display = 'none';
+            
+            // Deshabilitar botón
+            const generateBtn = document.getElementById('generateBtn');
+            generateBtn.disabled = true;
+            generateBtn.textContent = 'Procesando...';
+            
+            // Simular progreso con estados realistas
+            const statuses = [
+                'Inicializando red neural...',
+                'Analizando arquitectura musical...',
+                'Generando progresión harmónica...',
+                '
